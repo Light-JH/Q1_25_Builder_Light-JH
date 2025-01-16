@@ -20,7 +20,7 @@ const mint = generateSigner(umi);
         mint,
         name: "rainbowRug",
         symbol: "RRUG",
-        uri: "https://devnet.irys.xyz/D6Fm6XX7FtYxJdGPs2ZdLS9AiuWmQFCjmfyxLvh7NNRA",
+        uri: "https://devnet.irys.xyz/D6Fm6XX7FtYxJdGPs2ZdLS9AiuWmQFCjmfyxLvh7NNRA", // metadata uri
         sellerFeeBasisPoints: percentAmount(4)
     }
     )
