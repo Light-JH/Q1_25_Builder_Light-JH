@@ -1,8 +1,7 @@
 import wallet from "../../../../devnet.json"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
-import { createGenericFile, createSignerFromKeypair, signerIdentity } from "@metaplex-foundation/umi"
+import { createSignerFromKeypair, signerIdentity } from "@metaplex-foundation/umi"
 import { irysUploader } from "@metaplex-foundation/umi-uploader-irys"
-import { createMetadataAccountV3 } from "@metaplex-foundation/mpl-token-metadata";
 
 // Create a devnet connection
 const umi = createUmi('https://api.devnet.solana.com');
@@ -15,12 +14,9 @@ umi.use(signerIdentity(signer));
 
 (async () => {
     try {
-        // Follow this JSON structure
-        // https://docs.metaplex.com/programs/token-metadata/changelog/v1.0#json-structure
-
         const image = "https://devnet.irys.xyz/E6k4i8xvS5pKxsWpZMnk7LbQKsENgSVqH8SjVtM3eQNw";
         const metadata = {
-            name: "MyRainbowRug",
+            name: "rainbowRug",
             symbol: "RRUG",
             description: "Rug generated from code",
             image,
