@@ -1,0 +1,9 @@
+[package]
+name = "cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.31", features = ["derive"] }
+solana-client = "1.18.11"
+solana-sdk = "1.18.11"
