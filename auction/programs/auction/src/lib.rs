@@ -45,4 +45,9 @@ pub mod auction {
         ctx.accounts.finalize()?;
         Ok(())
     }
+
+    pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
+        ctx.accounts.withdraw_and_close_vault()?;
+        Ok(())
+    }
 }
