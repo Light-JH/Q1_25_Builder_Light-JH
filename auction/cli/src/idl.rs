@@ -2,7 +2,7 @@ use solana_idlgen::idlgen;
 idlgen!({
   "name": "auction",
   "version": "0.1.0",
-  "metadata":{"address": "83hbyGzsQ2Ekje4oD1g87dS9KmRVxbK4bJq2DHZCHFZR"},
+  "metadata":{"address": "7VNBDULA3eH3ctDqx5ckpfZA1Xe2AkjUnGjuXe7de6bf"},
   "instructions": [
     {
       "name": "init_house",

@@ -7,7 +7,7 @@ mod state;
 // use errors::*;
 use instructions::*;
 
-declare_id!("83hbyGzsQ2Ekje4oD1g87dS9KmRVxbK4bJq2DHZCHFZR");
+declare_id!("7VNBDULA3eH3ctDqx5ckpfZA1Xe2AkjUnGjuXe7de6bf");
 
 #[program]
 pub mod auction {

@@ -1,8 +1,12 @@
-use std::path::PathBuf;
-
+use crate::idl::AuctionProgram;
 use clap::{Parser, Subcommand};
+use idl::InitHouseArgs;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::signer::keypair::read_keypair_file;
+use solana_sdk::{
+    pubkey::Pubkey,
+    signer::{keypair::read_keypair_file, Signer},
+};
+use std::path::PathBuf;
 
 mod idl;
 
@@ -19,8 +23,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Initialize the AuctionHouse.
     InitHouse {
+        /// Fee in basis points taken for successful auctions.
         fee: u16,
+        /// Name to identify the auction house.
         name: String,
     },
 
@@ -41,14 +48,48 @@ enum Command {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    // let cli = Cli::parse();
+    let Cli {
+        keypair_path,
+        command,
+    } = Cli::parse();
     let rpc_url = "http://127.0.0.1:8899";
-    let _client = RpcClient::new(rpc_url);
-    let _keypair = read_keypair_file("dev-wallet.json").expect("Couldn't find wallet file");
+    let client = RpcClient::new(rpc_url);
 
-    match cli.command {
+    let keypair_path = keypair_path.unwrap_or_else(|| {
+        dirs::home_dir()
+            .expect("Failed to get home directory")
+            .join(".config/solana/id.json")
+    });
+    let keypair = read_keypair_file(&keypair_path).expect("Couldn't find wallet file");
+
+    match command {
         Command::InitHouse { fee, name } => {
             println!("Initializing house with fee: {} and name: {}", fee, name);
+
+            let recent_blockhash = client
+                .get_latest_blockhash()
+                .expect("recent blockhash exists");
+            let (auction_house, _auction_house_bump) =
+                Pubkey::find_program_address(&[b"house", name.as_bytes()], &AuctionProgram::id());
+            let transaction = AuctionProgram::init_house(
+                &[
+                    &keypair.pubkey(),
+                    &auction_house,
+                    &solana_sdk::system_program::id(),
+                ],
+                &InitHouseArgs { fee, name },
+                Some(&keypair.pubkey()),
+                &[&keypair],
+                recent_blockhash,
+            );
+            let signature = client
+                .send_and_confirm_transaction(&transaction)
+                .expect("confirmed transaction");
+            println!(
+                "Initialized auction house account: {} at {}",
+                signature, auction_house
+            )
         }
 
         Command::InitAuction {
