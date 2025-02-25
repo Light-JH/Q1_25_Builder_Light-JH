@@ -1,9 +1,12 @@
 use std::path::PathBuf;
 
+use crate::idl::{CompleteArgs, UpdateArgs, WbaPrereqProgram};
 use clap::{Parser, Subcommand};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::signer::keypair::read_keypair_file;
 use solana_sdk::{pubkey::Pubkey, signer::keypair::Keypair};
+
+mod idl;
 
 #[derive(Parser)]
 #[command(name = "auction-cli")]
@@ -43,7 +46,6 @@ fn main() {
     let cli = Cli::parse();
     let rpc_url = "http://127.0.0.1:8899";
     let client = RpcClient::new(rpc_url);
-
     let keypair = read_keypair_file("dev-wallet.json").expect("Couldn't find wallet file");
 
     match cli.command {
