@@ -330,6 +330,62 @@ idlgen!({
         }
       ],
       "args": []
-      }
+      },
+    {
+      "name": "cancel",
+      "accounts": [
+          {
+            "name": "seller",
+            "isMut": true,
+            "isSigner": true
+          },
+          {
+            "name": "auction_house",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "auction",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "mint_a",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "mint_b",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "seller_mint_a_ata",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "vault",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "associated_token_program",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "system_program",
+            "isMut": false,
+            "isSigner": false
+          },
+          {
+            "name": "token_program",
+            "isMut": false,
+            "isSigner": false
+          }
+        ],
+        "args": []
+    }
   ]
 });

@@ -1,20 +1,20 @@
-use anchor_lang::{prelude::*, solana_program::clock::Slot};
+use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{close_account, CloseAccount},
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
+use crate::errors::AuctionError;
 use crate::state::{Auction, AuctionHouse};
 
 #[derive(Accounts)]
-#[instruction(starting_price: u64, end: Slot, amount: u64, decimal: u8)]
 pub struct Cancel<'info> {
     #[account(mut)]
     pub seller: Signer<'info>,
     #[account(
-        seeds = [b"house", auction_house.name.as_bytes()],
-        bump = auction_house.bump,
+        // seeds = [b"house", auction_house.name.as_bytes()],
+        // bump = auction_house.bump,
     )]
     pub auction_house: Account<'info, AuctionHouse>,
     // for the same house, seller can create auctions identified by different mints.
@@ -22,8 +22,8 @@ pub struct Cancel<'info> {
     #[account(
         mut,
         close = seller,
-        seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref(), end.to_le_bytes().as_ref()],
-        bump = auction.bump,
+        // seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref(), end.to_le_bytes().as_ref()],
+        // bump = auction.bump,
     )]
     pub auction: Account<'info, Auction>,
     pub mint_a: InterfaceAccount<'info, Mint>,
@@ -46,7 +46,18 @@ pub struct Cancel<'info> {
 }
 
 impl<'info> Cancel<'info> {
-    pub fn withdraw_and_close_vault(&mut self) -> Result<()> {
+    pub fn cancel(&mut self) -> Result<()> {
+        let current_slot = Clock::get()?.slot;
+
+        require!(
+            current_slot >= self.auction.end && self.auction.bidder.is_none(),
+            AuctionError::NotEligibleToWithdraw
+        );
+
+        self.withdraw_and_close_vault()
+    }
+
+    fn withdraw_and_close_vault(&mut self) -> Result<()> {
         let seeds = &[
             b"auction",
             self.auction_house.to_account_info().key.as_ref(),
