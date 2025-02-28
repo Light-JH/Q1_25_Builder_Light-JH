@@ -28,8 +28,8 @@ pub struct Finalize<'info> {
         close = seller,
         has_one = mint_a,
         has_one = mint_b,
-        // seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref()],
-        // bump = auction.bump,
+        seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref()],
+        bump = auction.bump,
         constraint = auction.bidder == Some(bidder.key()),
     )]
     pub auction: Box<Account<'info, Auction>>,
@@ -65,8 +65,8 @@ pub struct Finalize<'info> {
     #[account(
         mut,
         close = bidder,
-        // seeds = [b"bid", auction.key().as_ref(), bidder.key().as_ref()],
-        // bump = bid_state.bump,
+        seeds = [b"bid", auction.key().as_ref(), bidder.key().as_ref()],
+        bump = bid_state.bump,
         constraint = bid_state.bidder == bidder.key(),
     )]
     pub bid_state: Box<Account<'info, BidState>>,
