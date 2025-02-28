@@ -13,8 +13,8 @@ pub struct Cancel<'info> {
     #[account(mut)]
     pub seller: Signer<'info>,
     #[account(
-        // seeds = [b"house", auction_house.name.as_bytes()],
-        // bump = auction_house.bump,
+        seeds = [b"house", auction_house.name.as_bytes()],
+        bump = auction_house.bump,
     )]
     pub auction_house: Box<Account<'info, AuctionHouse>>,
     // for the same house, seller can create auctions identified by different mints.
@@ -22,8 +22,8 @@ pub struct Cancel<'info> {
     #[account(
         mut,
         close = seller,
-        // seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref()],
-        // bump = auction.bump,
+        seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref()],
+        bump = auction.bump,
     )]
     pub auction: Box<Account<'info, Auction>>,
     pub mint_a: Box<InterfaceAccount<'info, Mint>>,
