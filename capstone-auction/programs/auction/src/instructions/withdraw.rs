@@ -2,6 +2,7 @@ use crate::errors::AuctionError;
 use crate::state::{Auction, AuctionHouse, BidState};
 
 use anchor_lang::prelude::*;
+use anchor_spl::token::{close_account, CloseAccount};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
@@ -83,6 +84,29 @@ impl<'info> Withdraw<'info> {
 
         msg!("transfering back to bidder");
         transfer_checked(cpi_ctx, self.bidder_escrow.amount, self.mint_b.decimals)?;
+
+        // close escrow
+        let seeds = &[
+            b"bid",
+            self.auction.to_account_info().key.as_ref(),
+            self.bidder.to_account_info().key.as_ref(),
+            &[self.bid_state.bump],
+        ];
+        let signer_seeds = &[&seeds[..]];
+
+        let accounts = CloseAccount {
+            account: self.bidder_escrow.to_account_info(),
+            destination: self.bidder.to_account_info(),
+            authority: self.bid_state.to_account_info(),
+        };
+
+        let ctx = CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            accounts,
+            signer_seeds,
+        );
+
+        close_account(ctx)?;
 
         Ok(())
     }

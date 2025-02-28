@@ -94,7 +94,7 @@ impl<'info> Finalize<'info> {
         // msg!("bid_state.bidder: {:?}", self.bid_state.bidder);
         // msg!("bid_state = {:?}", self.bid_state);
         self.winner_withdraw_and_close_vault()?;
-        self.seller_withdraw_and_close_escrow()?;
+        self.seller_withdraw_and_close_escrow()?; // house fee transfered covered here as well
         Ok(())
     }
 
@@ -237,59 +237,6 @@ impl<'info> Finalize<'info> {
         );
 
         close_account(ctx)?;
-        Ok(())
-    }
-
-    //Unsuccessful auction
-    pub fn cancel(&mut self) -> Result<()> {
-        let current_slot = Clock::get()?.slot;
-        require!(
-            (self.auction.bidder.is_none() && current_slot >= self.auction.end),
-            AuctionError::NotEligibleToWithdraw
-        );
-
-        // seller get back mintA and close auction
-        let seeds = &[
-            b"auction",
-            self.auction_house.to_account_info().key.as_ref(),
-            self.seller.to_account_info().key.as_ref(),
-            self.mint_a.to_account_info().key.as_ref(),
-            self.mint_b.to_account_info().key.as_ref(),
-            &[self.auction.bump],
-        ];
-        let signer_seeds = &[&seeds[..]];
-
-        let transfer_accounts = TransferChecked {
-            from: self.vault.to_account_info(),
-            to: self.seller_mint_a_ata.to_account_info(),
-            mint: self.mint_a.to_account_info(),
-            authority: self.auction.to_account_info(),
-        };
-
-        let cpi_ctx = CpiContext::new_with_signer(
-            self.token_program.to_account_info(),
-            transfer_accounts,
-            signer_seeds,
-        );
-
-        // msg!("transfering to seller ata a.");
-        transfer_checked(cpi_ctx, self.vault.amount, self.mint_a.decimals)?;
-
-        // close vault to refund rent exemption
-        let accounts = CloseAccount {
-            account: self.vault.to_account_info(),
-            destination: self.seller.to_account_info(),
-            authority: self.auction.to_account_info(),
-        };
-
-        let ctx = CpiContext::new_with_signer(
-            self.token_program.to_account_info(),
-            accounts,
-            signer_seeds,
-        );
-
-        close_account(ctx)?;
-
         Ok(())
     }
 }

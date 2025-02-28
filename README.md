@@ -16,6 +16,7 @@ After account
 Use the following help command to know the auction program cli usage:
 ```
 cargo run -- --help
+cargo run init-auction --help
 ```
 Example to create an auction house with default house name and required input of house fee
 ```
