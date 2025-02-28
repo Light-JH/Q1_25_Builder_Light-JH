@@ -17,7 +17,7 @@ pub struct InitHouse<'info> {
         seeds = [b"house", name.as_bytes()],
         bump,
     )]
-    pub auction_house: Account<'info, AuctionHouse>,
+    pub auction_house: Box<Account<'info, AuctionHouse>>,
     pub system_program: Program<'info, System>,
 }
 
