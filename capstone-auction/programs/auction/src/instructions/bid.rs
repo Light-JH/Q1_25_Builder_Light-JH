@@ -20,8 +20,8 @@ pub struct Bid<'info> {
     pub auction_house: Box<Account<'info, AuctionHouse>>,
     #[account(
         mut,
-        // seeds = [b"auction", auction_house.key().as_ref(), auction.seller.key().as_ref(),mint_a.key().as_ref(), mint_b.key().as_ref()],
-        // bump = auction.bump,
+        seeds = [b"auction", auction_house.key().as_ref(), auction.seller.key().as_ref(),mint_a.key().as_ref(), mint_b.key().as_ref()],
+        bump = auction.bump,
     )]
     pub auction: Box<Account<'info, Auction>>,
     #[account(
