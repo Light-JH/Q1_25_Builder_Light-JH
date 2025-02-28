@@ -16,13 +16,13 @@ pub struct Finalize<'info> {
     #[account(mut)]
     pub bidder: SystemAccount<'info>,
     pub admin: SystemAccount<'info>,
-    pub mint_a: InterfaceAccount<'info, Mint>,
-    pub mint_b: InterfaceAccount<'info, Mint>,
+    pub mint_a: Box<InterfaceAccount<'info, Mint>>,
+    pub mint_b: Box<InterfaceAccount<'info, Mint>>,
     #[account(
         seeds = [b"house", auction_house.name.as_bytes()],
         bump = auction_house.bump,
     )]
-    pub auction_house: Account<'info, AuctionHouse>,
+    pub auction_house: Box<Account<'info, AuctionHouse>>,
     #[account(
         mut,
         close = seller,
@@ -32,35 +32,35 @@ pub struct Finalize<'info> {
         // bump = auction.bump,
         constraint = auction.bidder == Some(bidder.key()),
     )]
-    pub auction: Account<'info, Auction>,
+    pub auction: Box<Account<'info, Auction>>,
     #[account(
         init_if_needed,
         payer = payer,
         associated_token::mint = mint_a,
         associated_token::authority = bidder,
     )]
-    pub bidder_mint_a_ata: InterfaceAccount<'info, TokenAccount>,
+    pub bidder_mint_a_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = payer,
         associated_token::mint = mint_b,
         associated_token::authority = seller,
     )]
-    pub seller_mint_b_ata: InterfaceAccount<'info, TokenAccount>,
+    pub seller_mint_b_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = payer,
         associated_token::mint = mint_a,
         associated_token::authority = seller,
     )]
-    pub seller_mint_a_ata: InterfaceAccount<'info, TokenAccount>,
+    pub seller_mint_a_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         init_if_needed,
         payer = payer,
         associated_token::mint = mint_b,
         associated_token::authority = admin,
     )]
-    pub house_mint_b_ata: InterfaceAccount<'info, TokenAccount>,
+    pub house_mint_b_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
@@ -69,19 +69,19 @@ pub struct Finalize<'info> {
         // bump = bid_state.bump,
         constraint = bid_state.bidder == bidder.key(),
     )]
-    pub bid_state: Account<'info, BidState>,
+    pub bid_state: Box<Account<'info, BidState>>,
     #[account(
         mut,
         associated_token::mint = mint_b,
         associated_token::authority = bid_state,
     )]
-    pub bidder_escrow: InterfaceAccount<'info, TokenAccount>,
+    pub bidder_escrow: Box<InterfaceAccount<'info, TokenAccount>>,
     #[account(
         mut,
         associated_token::mint = auction.mint_a,
         associated_token::authority = auction,
     )]
-    pub vault: InterfaceAccount<'info, TokenAccount>,
+    pub vault: Box<InterfaceAccount<'info, TokenAccount>>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
