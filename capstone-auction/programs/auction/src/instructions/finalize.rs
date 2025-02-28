@@ -11,11 +11,14 @@ use anchor_spl::{
 pub struct Finalize<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+    /// CHECK: Just need pubkey...
     #[account(mut)]
-    pub seller: SystemAccount<'info>,
+    pub seller: AccountInfo<'info>,
+    /// CHECK: Just need pubkey...
     #[account(mut)]
-    pub bidder: SystemAccount<'info>,
-    pub admin: SystemAccount<'info>,
+    pub bidder: AccountInfo<'info>,
+    /// CHECK: Just need pubkey...
+    pub admin: AccountInfo<'info>,
     pub mint_a: Box<InterfaceAccount<'info, Mint>>,
     pub mint_b: Box<InterfaceAccount<'info, Mint>>,
     #[account(
@@ -26,42 +29,11 @@ pub struct Finalize<'info> {
     #[account(
         mut,
         close = seller,
-        has_one = mint_a,
-        has_one = mint_b,
         seeds = [b"auction", auction_house.key().as_ref(), seller.key().as_ref(), mint_a.key().as_ref(), mint_b.key().as_ref()],
         bump = auction.bump,
         constraint = auction.bidder == Some(bidder.key()),
     )]
     pub auction: Box<Account<'info, Auction>>,
-    #[account(
-        init_if_needed,
-        payer = payer,
-        associated_token::mint = mint_a,
-        associated_token::authority = bidder,
-    )]
-    pub bidder_mint_a_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        init_if_needed,
-        payer = payer,
-        associated_token::mint = mint_b,
-        associated_token::authority = seller,
-    )]
-    pub seller_mint_b_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        init_if_needed,
-        payer = payer,
-        associated_token::mint = mint_a,
-        associated_token::authority = seller,
-    )]
-    pub seller_mint_a_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    #[account(
-        init_if_needed,
-        payer = payer,
-        associated_token::mint = mint_b,
-        associated_token::authority = admin,
-    )]
-    pub house_mint_b_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-
     #[account(
         mut,
         close = bidder,
@@ -82,6 +54,43 @@ pub struct Finalize<'info> {
         associated_token::authority = auction,
     )]
     pub vault: Box<InterfaceAccount<'info, TokenAccount>>,
+
+    /// CHECK: Must be token account (mint_a, bidder).
+    #[account(
+        mut,
+        seeds = [
+            bidder.key().as_ref(),
+            token_program.key().as_ref(),
+            mint_a.key().as_ref(),
+        ],
+        seeds::program = associated_token_program.key(),
+        bump,
+    )]
+    pub bidder_mint_a_ata: AccountInfo<'info>,
+    /// CHECK: Must be token account (mint_b, seller).
+    #[account(
+        mut,
+        seeds = [
+            seller.key().as_ref(),
+            token_program.key().as_ref(),
+            mint_b.key().as_ref(),
+        ],
+        seeds::program = associated_token_program.key(),
+        bump,
+    )]
+    pub seller_mint_b_ata: AccountInfo<'info>,
+    /// CHECK: Must be token account (mint_b, admin).
+    #[account(
+        mut,
+        seeds = [
+            admin.key().as_ref(),
+            token_program.key().as_ref(),
+            mint_b.key().as_ref(),
+        ],
+        seeds::program = associated_token_program.key(),
+        bump,
+    )]
+    pub admin_mint_b_ata: AccountInfo<'info>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -116,6 +125,12 @@ impl<'info> Finalize<'info> {
             Some(self.bid_state.bidder) == self.auction.bidder,
             AuctionError::NotEligibleToWithdraw
         );
+
+        self.initialize_token_account_if_needed(
+            self.mint_a.to_account_info(),
+            self.bidder.to_account_info(),
+            self.bidder_mint_a_ata.to_account_info(),
+        )?;
 
         let seeds = &[
             b"auction",
@@ -166,6 +181,13 @@ impl<'info> Finalize<'info> {
             (current_slot >= self.auction.end),
             AuctionError::NotEligibleToWithdraw
         );
+
+        self.initialize_token_account_if_needed(
+            self.mint_b.to_account_info(),
+            self.seller.to_account_info(),
+            self.seller_mint_b_ata.to_account_info(),
+        )?;
+
         let seeds = &[
             b"bid",
             self.auction.to_account_info().key.as_ref(),
@@ -206,11 +228,17 @@ impl<'info> Finalize<'info> {
         // msg!("transfering to bidder");
         transfer_checked(cpi_ctx, amount, self.mint_b.decimals)?;
 
+        self.initialize_token_account_if_needed(
+            self.mint_b.to_account_info(),
+            self.admin.to_account_info(),
+            self.admin_mint_b_ata.to_account_info(),
+        )?;
+
         // transfer mintB from bidder_escrow to auction house
 
         let transfer_accounts = TransferChecked {
             from: self.bidder_escrow.to_account_info(),
-            to: self.house_mint_b_ata.to_account_info(),
+            to: self.admin_mint_b_ata.to_account_info(),
             mint: self.mint_b.to_account_info(),
             authority: self.bid_state.to_account_info(),
         };
@@ -238,5 +266,28 @@ impl<'info> Finalize<'info> {
 
         close_account(ctx)?;
         Ok(())
+    }
+
+    fn initialize_token_account_if_needed(
+        &mut self,
+        mint: AccountInfo<'info>,
+        authority: AccountInfo<'info>,
+        associated_token: AccountInfo<'info>,
+    ) -> Result<()> {
+        if associated_token.data_is_empty() {
+            anchor_spl::associated_token::create(CpiContext::new(
+                self.associated_token_program.to_account_info(),
+                anchor_spl::associated_token::Create {
+                    payer: self.payer.to_account_info(),
+                    associated_token,
+                    authority,
+                    mint,
+                    system_program: self.system_program.to_account_info(),
+                    token_program: self.token_program.to_account_info(),
+                },
+            ))
+        } else {
+            Ok(())
+        }
     }
 }
