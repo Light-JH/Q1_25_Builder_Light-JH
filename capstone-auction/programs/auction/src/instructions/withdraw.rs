@@ -45,7 +45,7 @@ pub struct Withdraw<'info> {
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
-
+// bidder withdraw for falling out the highest price
 impl<'info> Withdraw<'info> {
     pub fn withdraw(&mut self) -> Result<()> {
         msg!("withdraw");

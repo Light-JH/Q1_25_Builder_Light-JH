@@ -37,32 +37,30 @@ enum Command {
     /// Initialize the AuctionHouse.
     InitHouse {
         /// Fee in basis points taken for successful auctions.
-        /// #[clap(long, short)]
-        #[arg(value_name = "BASIS_POINTS")]
+        #[arg(value_name = "FEE_IN_BASIS_POINTS")]
         fee: u16,
     },
 
     /// Initialize a new auction
     InitAuction {
         /// Mint of the token being listed for auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         listing_mint: Pubkey,
         /// Mint of the token used for bidding in auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         purchase_mint: Pubkey,
 
         /// The starting price.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         starting_price: String,
         /// The slot the auction will end on.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         end_slot: u64,
         /// The number of tokens to auction off.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         amount: String,
 
         /// The number of decimals to be used for the price.
-        /// #[clap(long, short)]
         #[clap(long, short, default_value = "9")]
         decimals: u8,
     },
@@ -70,55 +68,56 @@ enum Command {
     /// bidder place bid
     Bid {
         /// Mint of the token being listed for auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         listing_mint: Pubkey,
         /// Mint of the token used for bidding in auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         purchase_mint: Pubkey,
         /// The seller in the auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         seller: Pubkey,
         /// bidder bid price, requring price higher than the current highest price
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         price: String,
         /// The number of decimals to be used for the price.
-        /// #[clap(long, short)]
         #[clap(long, short, default_value = "9")]
         decimals: u8,
     },
     /// bidder withdraw after falling out of highest price
     Withdraw {
         /// Mint of the token being listed for auction.
-        // #[clap(long, short)]
+        #[clap(long, short)]
         listing_mint: Pubkey,
         /// Mint of the token used for bidding in auction.
+        #[clap(long, short)]
         purchase_mint: Pubkey,
         /// The seller in the auction.
+        #[clap(long, short)]
         seller: Pubkey,
     },
     Finalize {
         /// auction house admin
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         admin: Pubkey,
         /// Mint of the token being listed for auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         listing_mint: Pubkey,
         /// Mint of the token used for bidding in auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         purchase_mint: Pubkey,
         /// The seller in the auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         seller: Pubkey,
         /// The winner(bidder) in the auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         bidder: Pubkey,
     },
     Cancel {
         /// Mint of the token being listed for auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         listing_mint: Pubkey,
         /// Mint of the token used for bidding in auction.
-        /// #[clap(long, short)]
+        #[clap(long, short)]
         purchase_mint: Pubkey,
     },
 }
@@ -351,8 +350,8 @@ fn main() {
             let AuctionSellerKeys {
                 auction,
                 vault,
-                seller_listing_mint_ata,
                 seller_purchase_mint_ata,
+                ..
             } = derive_auction_keys(&auction_house, &listing_mint, &purchase_mint, &seller);
 
             let BidderKeys {
