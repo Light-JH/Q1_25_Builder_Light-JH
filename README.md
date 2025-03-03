@@ -28,5 +28,12 @@ cargo run -- -k ../demo/auctioneer.json init-auction GRXHSrCmGPAsEDTFtrKH78xjHzn
 GTTZ 7GhJv6M85G59zHSvZBjZtaVEWExC5JLeFQASC2NNUgym 4.567 5000 100
 ```
 
+Deploy
+```
+anchor deploy --provider.cluster devnet
+anchor idl init --filepath target/idl/auction.json 6k28s3kLLzHwdDbuw6BVKSxK6oH1FUJQiWPeoFomnGrF
+```
+
+
 
 

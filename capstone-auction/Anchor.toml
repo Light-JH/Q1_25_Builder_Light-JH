@@ -7,6 +7,9 @@ skip-lint = false
 [programs.localnet]
 auction = "6k28s3kLLzHwdDbuw6BVKSxK6oH1FUJQiWPeoFomnGrF"
 
+[programs.devnet]
+auction = "6k28s3kLLzHwdDbuw6BVKSxK6oH1FUJQiWPeoFomnGrF"
+
 [registry]
 url = "https://api.apr.dev"
 
